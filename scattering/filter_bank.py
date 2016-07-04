@@ -1,8 +1,5 @@
 import numpy as np
-import skimage
 from skimage.filters import morlet_kernel, gabor_kernel
-from scipy import ndimage as ndi
-
 
 def zero_pad_filter(filter, N):
     if (filter.shape[0] > N) :
@@ -93,8 +90,6 @@ def filter_bank_morlet2d(N, J=4, L=8, sigma_phi = 0.8, sigma_xi = 0.8):
     Filters = dict(phi=filter_phi, psi=filters_psi)
 
     return Filters, littlewood_paley
-
-
 
 """
 def periodize_filter(filt,j):

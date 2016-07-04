@@ -83,7 +83,6 @@ def subsample(X,j):
     return X[:,:,:,d.astype(int),d.astype(int)]
 
 
-
 def scattering(x,wavelet_filters):
 
     num_signals = x.shape[0]
@@ -96,7 +95,7 @@ def scattering(x,wavelet_filters):
     S = np.ndarray((num_signals,num_coefs,spatial_coefs,spatial_coefs))
 
     #Zero order coeffs
-    S[0,0,:,:]= apply_lowpass(x, wavelet_filters['phi'][0], J,  spatial_coefs)
+    S[:,0,:,:]= apply_lowpass(x, wavelet_filters['phi'][0], J,  spatial_coefs)
 
     #First order scattering coeffs
     Sview = S[:,1:J*L+1,:,:].view()
