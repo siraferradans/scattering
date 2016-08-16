@@ -21,7 +21,7 @@ from scattering.scattering import scattering
 def DB_rgb2yuv(X):
     num_samples,c,px,px = X.shape
     Xta = X.transpose((3,2,0,1))/255
-    Iyuv = rgb2yuv(Xta).transpose((2,3,0,1)).copy()
+    Iyuv = rgb2yuv(Xta).transpose((2,3,1,0)).copy()
     Iyuv.shape = (num_samples*3,px,px)
     return Iyuv
 
