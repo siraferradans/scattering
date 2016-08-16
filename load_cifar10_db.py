@@ -48,7 +48,7 @@ def load_images_cifar():
 def load_scattering_cifar(num_images = 300, J=3,L=8,m=2):
 
     i = -1
-    epsilon = 1e-3
+    epsilon = 1e-6
     print('Loading images:')
     t_images = time.time()
 
@@ -72,7 +72,7 @@ def load_scattering_cifar(num_images = 300, J=3,L=8,m=2):
         print(i, '/', min(num_images, X_train.shape[0]))
         S,u = scattering(X_train[i:i + step, :, :], wavelet_filters,m=m)
 
-        scatterings_train.append(np.log(S+epsilon))
+        scatterings_train.append(np.log(np.abs(S)+epsilon))
         if (np.isnan(np.sum(scatterings_train[:]))):
             print('we have a nan:, since min is:',np.min(S) )
         else:
@@ -96,7 +96,7 @@ def load_scattering_cifar(num_images = 300, J=3,L=8,m=2):
         if (np.isnan(np.sum(S[:]))):
             print(' we have a nan')
         
-        scatterings_test.append(np.log(S+epsilon))
+        scatterings_test.append(np.log(np.abs(S)+epsilon))
 
     scatterings_test = np.concatenate(scatterings_test, axis=0)
     #putting color channels together
