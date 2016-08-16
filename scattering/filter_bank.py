@@ -28,7 +28,7 @@ def filter_bank_morlet2d(N, J=4, L=8, sigma_phi = 0.8, sigma_xi = 0.8):
 
 
     # TODO:
-    # - allow boundary values that are not circular
+    # - allow boundary values that are not periodic
     # - introduce subsampling (now all filters are NxN)
 
     max_scale = 2 ** (float(J - 1))
@@ -61,7 +61,7 @@ def filter_bank_morlet2d(N, J=4, L=8, sigma_phi = 0.8, sigma_xi = 0.8):
             freq = xi / (np.pi * 2)
 
             psi = morlet_kernel(freq, theta=theta, sigma_x=sigma_x, sigma_y=sigma_y,n_stds=12)
-
+      
             #needs a small shift for odd sizes
             if (psi.shape[0] % 2 > 0):
                 if (psi.shape[1] % 2 > 0):
@@ -74,25 +74,50 @@ def filter_bank_morlet2d(N, J=4, L=8, sigma_phi = 0.8, sigma_xi = 0.8):
                 else:
                     Psi = zero_pad_filter(psi, N)
 
-
-            angles[l, :, :] = np.fft.fft2(np.fft.fftshift(Psi))
+            angles[l, :, :] = np.fft.fft2(np.fft.fftshift(0.5*Psi))
 
         littlewood_paley += np.sum(np.abs(angles) ** 2, axis=0)
         filters_psi.append(angles)
-
 
     lwp_max = littlewood_paley.max()
 
     for filt in filters_psi:
         filt /= np.sqrt(lwp_max/2)
 
-
     Filters = dict(phi=filter_phi, psi=filters_psi)
 
     return Filters, littlewood_paley
 
-"""
-def periodize_filter(filt,j):
+
+
+def filterbank_to_multiresolutionfilterbank(filters,Resolution):
+
+    J = len(filters['psi']) #scales
+    L = len(filters['psi'][0]) #angles
+    N = filters['psi'][0].shape[-1] #size at max scale
+
+    Phi_multires = []
+    Psi_multires = []
+    for res in np.arange(0,Resolution):
+        Phi_multires.append(get_filter_at_resolution(filters['phi'][0,:,:],res))
+
+        aux_filt_psi = np.ndarray((J,L,N/2**res,N/2**res), dtype='complex64')
+        for j in np.arange(0,J):
+            for l in np.arange(0,L):
+                aux_filt_psi[j,l,:,:] = get_filter_at_resolution(filters['psi'][j][l,:,:],res)
+
+        Psi_multires.append(aux_filt_psi)
+
+
+    Filters_multires = dict(phi=Phi_multires, psi=Psi_multires)
+    return Filters_multires
+
+
+def ispow2(N):
+    return 0 == (N & (N - 1))
+
+
+def get_filter_at_resolution(filt,j):
 
     cast = np.complex64
     N = filt.shape[0]  # filter is square
@@ -120,7 +145,7 @@ def periodize_filter(filt,j):
 
 
     return filt_multires
-"""
+
 
 
 
