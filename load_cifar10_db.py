@@ -73,12 +73,11 @@ def load_scattering_cifar(num_images = 300, J=3,L=8,m=2):
         S,u = scattering(X_train[i:i + step, :, :], wavelet_filters,m=m)
 
         scatterings_train.append(np.log(np.abs(S)+epsilon))
-        if (np.isnan(np.sum(scatterings_train[:]))):
-            print('we have a nan:, since min is:',np.min(S) )
-        else:
-            print('everything ok')
 
     scatterings_train = np.concatenate(scatterings_train, axis=0)
+
+    if (np.isnan(np.sum(scatterings_train[:]))):
+        print('Error: we have a nans in the training set)
 
     #putting color channels together
     num_files,scat_coefs,spatial,spatial = scatterings_train.shape
@@ -93,12 +92,14 @@ def load_scattering_cifar(num_images = 300, J=3,L=8,m=2):
     for i in np.arange(0, X_test.shape[0], step):
         print(i, '/', min(num_images*3, X_test.shape[0]))
         S,u = scattering(X_test[i:i + step , :, :], wavelet_filters,m=m)
-        if (np.isnan(np.sum(S[:]))):
-            print(' we have a nan')
-        
+
         scatterings_test.append(np.log(np.abs(S)+epsilon))
 
     scatterings_test = np.concatenate(scatterings_test, axis=0)
+
+    if (np.isnan(np.sum(scatterings_test[:]))):
+        print('Error: we have a nans in the test set')
+
     #putting color channels together
     num_files,scat_coefs,spatial,spatial = scatterings_test.shape
     scatterings_test.shape = (num_files/3,3*scat_coefs,spatial,spatial)
