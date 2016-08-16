@@ -74,7 +74,7 @@ def load_scattering_cifar(num_images = 300, J=3,L=8,m=2):
 
         scatterings_train.append(np.log(S+epsilon))
         if (np.isnan(np.sum(scatterings_train[:]))):
-            print('we have a nan')
+            print('we have a nan:, since min is:',np.min(S) )
         else:
             print('everything ok')
 
