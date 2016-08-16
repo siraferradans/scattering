@@ -14,8 +14,8 @@ import skimage.transform as sct
 
 from keras.datasets import cifar10
 import numpy as np
-from scattering_nosubsampling.filter_bank import filter_bank_morlet2d
-from scattering_nosubsampling.scattering import scattering
+from scattering.filter_bank import filter_bank_morlet2d
+from scattering.scattering import scattering
 
 
 def DB_rgb2yuv(X):
