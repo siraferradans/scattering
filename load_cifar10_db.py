@@ -48,7 +48,7 @@ def load_images_cifar():
 def load_scattering_cifar(num_images = 300, J=3,L=8,m=2):
 
     i = -1
-    epsilon = 1e-6
+    epsilon = 1e-3
     print('Loading images:')
     t_images = time.time()
 
