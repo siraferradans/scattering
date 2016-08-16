@@ -77,7 +77,7 @@ def load_scattering_cifar(num_images = 300, J=3,L=8,m=2):
     scatterings_train = np.concatenate(scatterings_train, axis=0)
 
     if (np.isnan(np.sum(scatterings_train[:]))):
-        print('Error: we have a nans in the training set)
+        print('Error: we have a nans in the training set')
 
     #putting color channels together
     num_files,scat_coefs,spatial,spatial = scatterings_train.shape
