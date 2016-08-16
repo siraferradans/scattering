@@ -71,10 +71,12 @@ def load_scattering_cifar(num_images = 300, J=3,L=8,m=2):
     for i in np.arange(0, min(num_images*3, X_train.shape[0]), step):
         print(i, '/', min(num_images, X_train.shape[0]))
         S,u = scattering(X_train[i:i + step, :, :], wavelet_filters,m=m)
-        if (np.isnan(np.sum(S[:]))):
-            print(' we have a nan')
-        
+
         scatterings_train.append(np.log(S+epsilon))
+        if (np.isnan(np.sum(scatterings_train[:]))):
+            print('we have a nan')
+        else:
+            print('everything ok')
 
     scatterings_train = np.concatenate(scatterings_train, axis=0)
 
