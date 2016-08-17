@@ -101,7 +101,7 @@ def filterbank_to_multiresolutionfilterbank(filters,Resolution):
     for res in np.arange(0,Resolution):
         Phi_multires.append(get_filter_at_resolution(filters['phi'][0,:,:],res))
 
-        aux_filt_psi = np.ndarray((J,L,N/2**res,N/2**res), dtype='complex64')
+        aux_filt_psi = np.ndarray((J,L,int(N/2**res),int(N/2**res)), dtype='complex64')
         for j in np.arange(0,J):
             for l in np.arange(0,L):
                 aux_filt_psi[j,l,:,:] = get_filter_at_resolution(filters['psi'][j][l,:,:],res)
@@ -127,10 +127,10 @@ def get_filter_at_resolution(filt,j):
     J = int(np.log2(N))
 
     # NTM: 0.5 is a cute trick for higher dimensions!
-    mask = np.hstack((np.ones(N / 2 ** (1 + j)), 0.5, np.zeros(N - N / 2 ** (j + 1) - 1))) \
+    mask = np.hstack((np.ones(int(N / 2 ** (1 + j))), 0.5, np.zeros(int(N - N / 2 ** (j + 1) - 1)))) \
            + \
            np.hstack(
-               (np.zeros(N - N / 2 ** (j + 1)), 0.5, np.ones(N / 2 ** (1 + j) - 1)))
+               (np.zeros(int(N - N / 2 ** (j + 1))), 0.5, np.ones(int(N / 2 ** (1 + j) - 1))))
 
     mask.shape = N, 1
 
@@ -140,7 +140,7 @@ def get_filter_at_resolution(filt,j):
 
     # Remember: C contiguous, last index varies "fastest" (contiguous in
     # memory) (unlike Matlab)
-    fold_size = (2 ** j, N / 2 ** j, 2 ** j, N / 2 ** j)
+    fold_size = (int(2 ** j), int(N / 2 ** j), int(2 ** j), int(N / 2 ** j))
     filt_multires = filt_lp.reshape(fold_size).sum(axis=(0, 2))
 
 
