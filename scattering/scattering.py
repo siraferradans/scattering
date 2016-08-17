@@ -25,12 +25,15 @@ def subsample(X,j):
     
     return 2**(j)*X[...,::dsf,::dsf]
 
-
 def apply_lowpass(img, phi, J, N_scat):
 
     Img_filtered = np.real(np.fft.ifft2(np.fft.fft2(img)*phi))
-    ds = 2**(J-1) # -1 for the oversampling, to be sure that everything is ok
+#    ds = 2**(J-1) # -1 for the oversampling, to be sure that everything is ok
+    N_nolp = img.shape[-1]
 
+    N_nolp_r = N_nolp // 2 + 1
+    ds = int(N_nolp / N_scat)
+    
     return 2 ** (J - 1) *Img_filtered[...,::ds,::ds]
 
 def scattering(x,wavelet_filters,m):
