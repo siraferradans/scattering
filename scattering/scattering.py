@@ -37,7 +37,41 @@ def apply_lowpass(img, phi, J, N_scat):
     return 2 ** (J - 1) *Img_filtered[...,::ds,::ds]
 
 def scattering(x,wavelet_filters,m):
-    
+ """
+ Compute the scattering transform of a signal (or set of signals).
+
+ Given a set of 2D signals defined in x, this function computes the scattering transform
+ of these signals using the filter bank 'wavelet_filters'.
+
+ Parameters
+ ----------
+ x  : array_like
+    3D dnarray with N images (2D arrays) of size (px,px), thus x has size (N,px,px)
+    In case the array is rectangular (N,px,py) for px not equal to py, the images will be
+    resized.
+
+    Bondary values: The scattering transform applies a set of convolutions to the input signals.
+    These convolutions are computed as the point-wise multiplication in the Fourier domain, thus
+    the boundary values of the image are circular or cyclic. In case you need other kind of boundary
+    values, for instance zero-padded, you should provide it before calling this function.
+
+
+
+ wavelet_filters    :  Dictionary with the multiresolution wavelet filter bank
+    Dictionary of vectors obtained after calling
+ :param m:
+ :return:
+ """"""
+
+
+
+
+
+
+
+
+
+
     num_signals = x.shape[0]
     J = len(wavelet_filters['psi'][0])    #number of scales
     L = len(wavelet_filters['psi'][0][0]) #number of orientations

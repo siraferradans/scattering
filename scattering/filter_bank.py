@@ -1,13 +1,16 @@
 import numpy as np
 from skimage.filters import morlet_kernel, gabor_kernel
 
-def zero_pad_filter(filter, N):
-    if (filter.shape[0] > N) :
+
+def _zero_pad_filter(filter, N):
+    """ Zero pads 'filter' so it has a NxN size """
+
+    if filter.shape[0] > N :
         M = np.array(filter.shape[0])
         init = np.int(np.floor(M / 2 - N / 2))
         filter = filter[init:init + N,:]
 
-    if (filter.shape[1] > N):
+    if filter.shape[1] > N:
         M = np.array(filter.shape[1])
         init = np.int(np.floor(M / 2 - N / 2))
         filter = filter[:, init:init + N]
@@ -21,26 +24,57 @@ def zero_pad_filter(filter, N):
 
 
 def filter_bank_morlet2d(N, J=4, L=8, sigma_phi = 0.8, sigma_xi = 0.8):
-    # This function computes the set of morlet filters at the maximum size (NxN) and also
+    """ Compute a 2D complex Morlet filter bank [1]_ in the Fourier domain.
+
+    Creates a filter bank of 1+JxL number of filters in the Fourier domain, where each filter has size NxN, and differ in
+    the activation frequency. All these filters are complex 2D morlet filters.
+
+    Parameters
+    ----------
+    N : size of the (squared) filters
+    J : total number of scales of the filters which are located in the frequency domain, as powers of 2.
+    L : total number of angles for each scale
+    sigma_phi : standard deviation needed as a parameter for the low-pass filter (Gaussian)
+    sigma_xi  : standard deviation needed as a parameter for every band-pass filter (Morlet)
+
+
+    Returns
+    -------
+    Filters : Dictionary structure with the filters saved in the Fourier domain organized in the following way
+            - Filters['phi'] : Low pass filter (Gaussian) in a 2D vector of size NxN
+            - Filters['psi'] : Band pass filter (Morlet) saved as 4D complex array of size [J,L,N,N]
+              where 'J' indexes the scale, 'L; the angles and NxN is the size of a single filter.
+
+
+    littlewood_paley : Sum
     # tests the 'quality of the filters' by checking the littlewood-paley sum
 
     # Output : dictionary with the filters (in the Fourier domain), and the littlewood-paley image
 
+    References
+    ----------
 
-    # TODO:
-    # - allow boundary values that are not periodic
-    # - introduce subsampling (now all filters are NxN)
+    .. [1] https://en.wikipedia.org/wiki/Filter_bank
 
+    More information on Wavelet Filter banks can be found:
+    https://en.wikipedia.org/wiki/Discrete_wavelet_transform
+
+    Examples
+    --------
+
+
+
+"""
     max_scale = 2 ** (float(J - 1))
 
     sigma = sigma_phi * max_scale
     freq = 0.
 
-    filter_phi = np.ndarray((1,N,N), dtype='complex')
+    filter_phi = np.ndarray((N,N), dtype='complex')
     littlewood_paley = np.zeros((N, N), dtype='single')
 
     # Low pass
-    filter_phi[0, :, :] = np.fft.fft2(np.fft.fftshift(zero_pad_filter(gabor_kernel(freq, theta=0., sigma_x=sigma, sigma_y=sigma),N)))
+    filter_phi = np.fft.fft2(np.fft.fftshift(_zero_pad_filter(gabor_kernel(freq, theta=0., sigma_x=sigma, sigma_y=sigma),N)))
 
     ## Band pass filters:
     ## psi: Create band-pass filters
@@ -65,14 +99,14 @@ def filter_bank_morlet2d(N, J=4, L=8, sigma_phi = 0.8, sigma_xi = 0.8):
             #needs a small shift for odd sizes
             if (psi.shape[0] % 2 > 0):
                 if (psi.shape[1] % 2 > 0):
-                    Psi = zero_pad_filter(psi[:-1, :-1], N)
+                    Psi = _zero_pad_filter(psi[:-1, :-1], N)
                 else:
-                    Psi = zero_pad_filter(psi[:-1, :], N)
+                    Psi = _zero_pad_filter(psi[:-1, :], N)
             else:
                 if (psi.shape[1] % 2 > 0):
-                    Psi = zero_pad_filter(psi[:, :-1], N)
+                    Psi = _zero_pad_filter(psi[:, :-1], N)
                 else:
-                    Psi = zero_pad_filter(psi, N)
+                    Psi = _zero_pad_filter(psi, N)
 
             angles[l, :, :] = np.fft.fft2(np.fft.fftshift(0.5*Psi))
 
@@ -99,7 +133,7 @@ def filterbank_to_multiresolutionfilterbank(filters,Resolution):
     Phi_multires = []
     Psi_multires = []
     for res in np.arange(0,Resolution):
-        Phi_multires.append(get_filter_at_resolution(filters['phi'][0,:,:],res))
+        Phi_multires.append(get_filter_at_resolution(filters['phi'],res))
 
         aux_filt_psi = np.ndarray((J,L,int(N/2**res),int(N/2**res)), dtype='complex64')
         for j in np.arange(0,J):
