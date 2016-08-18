@@ -57,7 +57,7 @@ def scattering(x,wavelet_filters,m):
     v_resolution = []
     S = np.ndarray((num_signals,num_coefs,spatial_coefs,spatial_coefs))
 
-    print('J=',J,' L=',L,' num_signals=', num_signals, ' spatial_coefs=',spatial_coefs)
+    #print('J=',J,' L=',L,' num_signals=', num_signals, ' spatial_coefs=',spatial_coefs)
 
     current_resolution = 0
 
@@ -82,8 +82,8 @@ def scattering(x,wavelet_filters,m):
         V.append( aux )
         U.append( np.abs(aux))
 
-        print('size Sview[',j,']=',Sview.shape)
-        print('size U[',j,']=',U[j].shape)
+        #print('size Sview[',j,']=',Sview.shape)
+        #print('size U[',j,']=',U[j].shape)
         Sview[:, j, :, :, :] = apply_lowpass(U[j], wavelet_filters['phi'][resolution], J,  spatial_coefs)
 
     # Second order scattering coeffs
