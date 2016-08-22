@@ -107,10 +107,11 @@ def scattering(x,wavelet_filters=None,m=2):
 
     Returns
     -------
-    S : array_like
-        Scattering transform of the x signals
+    S : 4D array_like
+        Scattering transform of the x signals, of size (N,num_coeffs,spatial_coefs,spatial_coefs). For more information
+        see _[1]
     U : array_like
-        Result before applying the lowpass filter and subsampling 
+        Result before applying the lowpass filter and subsampling.
 
     Raises
     ------
@@ -121,6 +122,10 @@ def scattering(x,wavelet_filters=None,m=2):
         settings, but warns about the parameters and suggests precomputing the filters.
     UserWarning
         If the value of m is not 0,1, or 2.
+
+    References
+    ----------
+    .. [1] Bruna, J., Mallat, S. 'Invariant Scattering Convolutional Networks'. IEEE Transactions on PAMI, 2012.
 
     Examples
     --------
