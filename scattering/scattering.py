@@ -5,7 +5,7 @@ from scipy import ndimage as ndi
 from scattering.filter_bank import filter_bank_morlet2d, filterbank_to_multiresolutionfilterbank
 import warnings
 
-def apply_fourier_mult(signals,filters):
+def _apply_fourier_mult(signals,filters):
 # Assume signals and filters are in the Fourier domain
 # and the dimensions are:
 # - signals: (num_signals, Nj,Nj) (color images can be stacked in the num_signals)
@@ -19,8 +19,7 @@ def apply_fourier_mult(signals,filters):
 
 
 def _subsample(X,j):
-    """
-    Spatial subsampling on the last two dimensions of X at a rate that depends on 2**j.
+    """Spatial subsampling on the last two dimensions of X at a rate that depends on 2**j.
 
     Parameters
     ----------
@@ -76,36 +75,66 @@ def _apply_lowpass(img, phi, J, n_scat):
 
 
 def scattering(x,wavelet_filters=None,m=2):
-
     """Compute the scattering transform of a signal (or set of signals).
 
     Given 'x', a set of 2D signals, this function computes the scattering transform
     of these signals using the filter bank 'wavelet_filters'.
 
-    Parameters
-    ----------
-    x  : array_like
-    3D dnarray with N images (2D arrays) of size (px,px), thus x has size (N,px,px)
-    In case the array is rectangular (N,px,py) for px not equal to py, the images will be
-    resized.
-
-    Notes to be considered before calling scattering:
-
-    Bondary values: The scattering transform applies a set of convolutions to the input signals.
+    Notes
+    -----
+    **Bondary values: The scattering transform applies a set of convolutions to the input signals.
     These convolutions are computed as the point-wise multiplication in the Fourier domain, thus
     the boundary values of the image are circular or cyclic. In case you need other kind of boundary
     values, for instance zero-padded, you should edit the images before calling this function.
 
-    Shape of x: The signals x must be squared shaped, thus (N,px,px) and not (N,px,py) for py != px. In case
+    **Shape of x: The signals x must be squared shaped, thus (N,px,px) and not (N,px,py) for py != px. In case
     the images are rectangular they will be cropped to the smallest dimension, px or py.
 
+    Parameters
+    ----------
+    x : array_like
+        3D dnarray with N images (2D arrays) of size (px,px), thus x has size (N,px,px)
+        In case the array is rectangular (N,px,py) for px not equal to py, the images will be cropped.
+    wavelet_filters : Dictionary with the multiresolution wavelet filter bank
+        Dictionary of vectors obtained after calling:
+            >>>> px = 32 #number of pixels of the images
+            >>>> J = np.log2(px) #number of scales
+            >>>> wf, l = filter_bank_morlet2d(px,J=J)
+            >>>> wavelet_filters = filterbank_to_multiresolutionfilterbank(wf,J)
+    m : int
+        Order of the scattering transform, which can be 0, 1 or 2.
 
 
-    wavelet_filters    :  Dictionary with the multiresolution wavelet filter bank
-    Dictionary of vectors obtained after calling
-    m  : Order of the scattering transform
-    values can be either 1 or 2
+    Returns
+    -------
+    S : array_like
+        Scattering transform of the x signals
+    U : array_like
+        Result before applying the lowpass filter and subsampling 
 
+    Raises
+    ------
+    UserWarning
+        If the size of x is not (N,px,px) and informs that the images with be cropped to (N,px,px)
+    UserWarning
+        If no wavelet filters, the function creates a multiresolution set of filters with predefined
+        settings, but warns about the parameters and suggests precomputing the filters.
+    UserWarning
+        If the value of m is not 0,1, or 2.
+
+    Examples
+    --------
+    Processing a set of 3 (randomly generated) images:
+
+            >>>> import numpy as np
+            >>>> from scattering.filter_bank import filter_bank_morlet2d, filterbank_to_multiresolutionfilterbank
+            >>>> from scattering.scattering import scattering
+
+            >>>> px = 32 #number of pixels of the images
+            >>>> images = np.arange(0,3*px*px).reshape(3,px,px) #create images
+            >>>> wf, l = filter_bank_morlet2d(px,J=np.log2(px))
+            >>>> wavelet_filters = filterbank_to_multiresolutionfilterbank(wf,J)
+            >>>> S,U = scattering(images,m=2)
     """
 
     ## Check that the input data is correct:
@@ -123,14 +152,16 @@ def scattering(x,wavelet_filters=None,m=2):
     if wavelet_filters is None:
         J = int(min(np.log2(px),3))
         L = 8
-        warning_string = "No filter input, we create a Morlet filter bank with J= {0} and L={1}"
+        warning_string = "No filter input, we create a Morlet filter bank with J= {0} and L={1}. Strongly suggest creating " \
+                         "the filters before hand and pass them as a parameter."
         warnings.warn(warning_string.format(J,L))
         wf, littlewood = filter_bank_morlet2d(px, J=J, L=L)
         wavelet_filters = filterbank_to_multiresolutionfilterbank(wf, J)
+    else:
+        J = len(wavelet_filters['psi'][0])  # number of scales
+        L = len(wavelet_filters['psi'][0][0])  # number of orientations
 
     num_signals = x.shape[0]
-    J = len(wavelet_filters['psi'][0])  # number of scales
-    L = len(wavelet_filters['psi'][0][0])  # number of orientations
 
     ## 3.- Check the Order of the scattering transform, can only be 0,1,2, and that gives us different
     # number of scattering coefs
@@ -156,10 +187,10 @@ def scattering(x,wavelet_filters=None,m=2):
 
     current_resolution = 0
 
-    #Zero order coeffs
+    #Zero order scattering coeffs
     S[:, 0, :, :] = _apply_lowpass(x, wavelet_filters['phi'][current_resolution], J,  spatial_coefs)
 
-    # First order scattering coeffs
+    #First order scattering coeffs
     if m>0:
         Sview = S[:,1:J*L+1,:,:].view()
         Sview.shape=(num_signals,J,L,spatial_coefs,spatial_coefs)
@@ -172,14 +203,14 @@ def scattering(x,wavelet_filters=None,m=2):
             v_resolution.append(resolution)
 
             # fft2(| x conv Psi_j |): X is full resolution, as well as the filters
-            aux = _subsample(np.fft.ifft2(apply_fourier_mult(X,filtersj)), resolution )
+            aux = _subsample(np.fft.ifft2(_apply_fourier_mult(X,filtersj)), resolution )
 
             V.append( aux )
             U.append( np.abs(aux))
 
             Sview[:, j, :, :, :] = _apply_lowpass(U[j], wavelet_filters['phi'][resolution], J,  spatial_coefs)
 
-    # Second order scattering coeffs
+    #Second order scattering coeffs
     if m>1:
         sec_order_coefs = int(J*(J-1)*L**2/2)
         
@@ -196,7 +227,7 @@ def scattering(x,wavelet_filters=None,m=2):
                 
                 for j2 in np.arange(j1+1,J):
                     # | U_lambda1 conv Psi_lambda2 | conv phi
-                    aux = np.abs(np.fft.ifft2(apply_fourier_mult(Ujl1, wavelet_filters['psi'][current_resolution][j2])))
+                    aux = np.abs(np.fft.ifft2(_apply_fourier_mult(Ujl1, wavelet_filters['psi'][current_resolution][j2])))
                     # computing all angles at once
                     S2norder[:,indx,:,:,:]= \
                         _apply_lowpass(aux, wavelet_filters['phi'][current_resolution], J,  spatial_coefs)
