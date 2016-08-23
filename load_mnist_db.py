@@ -32,11 +32,7 @@ def load_images_mnist(px=32):
 
     X_test = np.zeros((num_images_te, img_rows, img_cols))
     X_test[:, 3:31, 3:31] = X_test_sm
-    #X_train = sct.resize(X_train.transpose((1, 2, 0)), (px, px)).transpose((2, 0, 1))
-    #X_test  = sct.resize(X_test.transpose((1, 2, 0)), (px, px)).transpose((2, 0, 1))
 
-#    X_train = X_train.reshape(X_train.shape[0], 1, img_rows, img_cols)
-#    X_test = X_test.reshape(X_test.shape[0], 1, img_rows, img_cols)
     X_train = X_train.astype('float32')
     X_test = X_test.astype('float32')
     print('X_train shape:', X_train.shape)
