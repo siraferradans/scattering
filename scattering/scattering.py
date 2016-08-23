@@ -2,7 +2,7 @@ import numpy as np
 import skimage
 from skimage._shared.utils import assert_nD
 from scipy import ndimage as ndi
-from scattering.filter_bank import filter_bank_morlet2d, filterbank_to_multiresolutionfilterbank
+from scattering.filter_bank import multiresolution_filter_bank_morlet2d
 import warnings
 
 def _apply_fourier_mult(signals,filters):
@@ -99,8 +99,7 @@ def scattering(x,wavelet_filters=None,m=2):
         Dictionary of vectors obtained after calling:
             >>>> px = 32 #number of pixels of the images
             >>>> J = np.log2(px) #number of scales
-            >>>> wf, l = filter_bank_morlet2d(px,J=J)
-            >>>> wavelet_filters = filterbank_to_multiresolutionfilterbank(wf,J)
+            >>>> wavelet_filters = multiresolution_filter_bank_morlet2d(px,J=J)
     m : int
         Order of the scattering transform, which can be 0, 1 or 2.
 
@@ -132,13 +131,12 @@ def scattering(x,wavelet_filters=None,m=2):
     Processing a set of 3 (randomly generated) images:
 
             >>>> import numpy as np
-            >>>> from scattering.filter_bank import filter_bank_morlet2d, filterbank_to_multiresolutionfilterbank
+            >>>> from scattering.filter_bank import multiresolution_filter_bank_morlet2d
             >>>> from scattering.scattering import scattering
 
             >>>> px = 32 #number of pixels of the images
             >>>> images = np.arange(0,3*px*px).reshape(3,px,px) #create images
-            >>>> wf, l = filter_bank_morlet2d(px,J=np.log2(px))
-            >>>> wavelet_filters = filterbank_to_multiresolutionfilterbank(wf,J)
+            >>>> wavelet_filters,littlewoodpaley = multiresolution_filter_bank_morlet2d(px,J=np.log2(px))
             >>>> S,U = scattering(images,m=2)
     """
 
@@ -153,15 +151,14 @@ def scattering(x,wavelet_filters=None,m=2):
         px = min(px,py)
         x = x[:, 0:px, 0:px]
 
-    ## 2.- If we dont have filters, get them with the defailt values, J=3, L=8
+    ## 2.- If we dont have filters, get them with the default values, J=3, L=8
     if wavelet_filters is None:
         J = int(min(np.log2(px),3))
         L = 8
         warning_string = "No filter input, we create a Morlet filter bank with J= {0} and L={1}. Strongly suggest creating " \
                          "the filters before hand and pass them as a parameter."
         warnings.warn(warning_string.format(J,L))
-        wf, littlewood = filter_bank_morlet2d(px, J=J, L=L)
-        wavelet_filters = filterbank_to_multiresolutionfilterbank(wf, J)
+        wavelet_filters, littlewood=multiresolution_filter_bank_morlet2d(px, J=J, L=L)
     else:
         J = len(wavelet_filters['psi'][0])  # number of scales
         L = len(wavelet_filters['psi'][0][0])  # number of orientations

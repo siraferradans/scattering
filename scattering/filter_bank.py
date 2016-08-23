@@ -23,6 +23,15 @@ def _zero_pad_filter(filter, N):
     return padded_filter
 
 
+def multiresolution_filter_bank_morlet2d(N, J=4, L=8, sigma_phi = 0.8, sigma_xi = 0.8):
+
+    wf, littlewood = filter_bank_morlet2d(N, J=J, L=L, sigma_phi=sigma_phi, sigma_xi=sigma_xi)
+
+    multiresolution_wavelet_filters = filterbank_to_multiresolutionfilterbank(wf, J)
+
+    return multiresolution_wavelet_filters, littlewood
+
+
 def filter_bank_morlet2d(N, J=4, L=8, sigma_phi = 0.8, sigma_xi = 0.8):
     """ Compute a 2D complex Morlet filter bank [1]_ in the Fourier domain.
 
@@ -133,12 +142,12 @@ def filterbank_to_multiresolutionfilterbank(filters,Resolution):
     Phi_multires = []
     Psi_multires = []
     for res in np.arange(0,Resolution):
-        Phi_multires.append(get_filter_at_resolution(filters['phi'],res))
+        Phi_multires.append(_get_filter_at_resolution(filters['phi'],res))
 
         aux_filt_psi = np.ndarray((J,L,int(N/2**res),int(N/2**res)), dtype='complex64')
         for j in np.arange(0,J):
             for l in np.arange(0,L):
-                aux_filt_psi[j,l,:,:] = get_filter_at_resolution(filters['psi'][j][l,:,:],res)
+                aux_filt_psi[j,l,:,:] = _get_filter_at_resolution(filters['psi'][j][l,:,:],res)
 
         Psi_multires.append(aux_filt_psi)
 
@@ -147,16 +156,17 @@ def filterbank_to_multiresolutionfilterbank(filters,Resolution):
     return Filters_multires
 
 
-def ispow2(N):
+
+def _ispow2(N):
     return 0 == (N & (N - 1))
 
 
-def get_filter_at_resolution(filt,j):
+def _get_filter_at_resolution(filt,j):
 
     cast = np.complex64
     N = filt.shape[0]  # filter is square
 
-    assert ispow2(N), 'Filter size must be an integer power of 2.'
+    assert _ispow2(N), 'Filter size must be an integer power of 2.'
 
     J = int(np.log2(N))
 
