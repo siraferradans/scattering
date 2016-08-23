@@ -32,7 +32,7 @@ def multiresolution_filter_bank_morlet2d(N, J=4, L=8, sigma_phi = 0.8, sigma_xi 
     return multiresolution_wavelet_filters, littlewood
 
 
-def filter_bank_morlet2d(N, J=4, L=8, sigma_phi = 0.8, sigma_xi = 0.8):
+def filter_bank_morlet2d(N, J=4, L=8, sigma_phi=0.8, sigma_xi=0.8):
     """ Compute a 2D complex Morlet filter bank [1]_ in the Fourier domain.
 
     Creates a filter bank of 1+JxL number of filters in the Fourier domain, where each filter has size NxN, and differ in
@@ -70,6 +70,8 @@ def filter_bank_morlet2d(N, J=4, L=8, sigma_phi = 0.8, sigma_xi = 0.8):
 
     Examples
     --------
+        >>>> J = 3, L=8, px = 32
+        >>>> wavelet_filters, littlewood = filter_bank_morlet2d(px, J=J, L=L, sigma_phi=0.6957,sigma_xi=0.8506 )
 
 
 
