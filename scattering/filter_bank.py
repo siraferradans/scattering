@@ -131,7 +131,7 @@ def filter_bank_morlet2d(N, J=4, L=8, sigma_phi=0.8, sigma_xi=0.8):
 
     Filters = dict(phi=filter_phi, psi=filters_psi)
 
-    return Filters, littlewood_paley
+    return Filters, littlewood_paley*2
 
 
 
