@@ -4,17 +4,11 @@ import scipy.io
 import glob
 import time as time
 
-
-#from skimage import img_as_float
-# Load data: extract patches and label per patch
-from sklearn.feature_extraction.image import extract_patches_2d
-#from skimage import data
 from skimage.color.colorconv import rgb2yuv,yuv2rgb
-import skimage.transform as sct
 
 from keras.datasets import cifar10
 import numpy as np
-from scattering.filter_bank import filter_bank_morlet2d
+from scattering.filter_bank import multiresolution_filter_bank_morlet2d #filter_bank_morlet2d
 from scattering.scattering import scattering
 
 
@@ -26,6 +20,7 @@ def DB_rgb2yuv(X):
     #stack the color channels as 3 images
     Iyuv.shape = (num_samples*3,px,px)
     return Iyuv
+
 
 def load_images_cifar():
     # the data, shuffled and split between train and test sets
@@ -41,7 +36,7 @@ def load_images_cifar():
     return X_train, y_train, X_test, y_test
 
 
-def load_scattering_cifar(num_images = 300, J=3,L=8,m=2):
+def load_scattering_cifar(num_images=300, J=3, L=8, m=2, sigma_phi=0.6957, sigma_xi=0.8506):
 
     i = -1
     epsilon = 1e-6
@@ -55,7 +50,8 @@ def load_scattering_cifar(num_images = 300, J=3,L=8,m=2):
     print('shape data:', X_train.shape)
 
     print('Create filters:')
-    wavelet_filters, littlewood = filter_bank_morlet2d(px, J=J, L=L, sigma_phi=0.6957,sigma_xi=0.8506 )
+   # wavelet_filters, lw = filter_bank_morlet2d(px, J=J, L=L, sigma_phi=sigma_phi, sigma_xi=sigma_xi)
+    wavelet_filters, lw = multiresolution_filter_bank_morlet2d(px, J=J, L=L, sigma_phi=sigma_phi, sigma_xi=sigma_xi)
 
     ### Generate Training set
     print('Compute ', num_images, ' scatterings:')
