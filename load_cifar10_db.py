@@ -50,7 +50,7 @@ def load_scattering_cifar(num_images=300, J=3, L=8, m=2, sigma_phi=0.6957, sigma
     print('shape data:', X_train.shape)
 
     print('Create filters:')
-   # wavelet_filters, lw = filter_bank_morlet2d(px, J=J, L=L, sigma_phi=sigma_phi, sigma_xi=sigma_xi)
+    # wavelet_filters, lw = filter_bank_morlet2d(px, J=J, L=L, sigma_phi=sigma_phi, sigma_xi=sigma_xi)
     wavelet_filters, lw = multiresolution_filter_bank_morlet2d(px, J=J, L=L, sigma_phi=sigma_phi, sigma_xi=sigma_xi)
 
     ### Generate Training set
