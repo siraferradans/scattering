@@ -61,7 +61,7 @@ def load_scattering_cifar(num_images=300, J=3, L=8, m=2, sigma_phi=0.6957, sigma
     step = 600
     for i in np.arange(0, min(num_images*3, X_train.shape[0]), step):
         print(i, '/', min(num_images, X_train.shape[0]))
-        S,u = scattering(X_train[i:i + step, :, :], wavelet_filters,m=m)
+        S,u,st = scattering(X_train[i:i + step, :, :], wavelet_filters,m=m)
 
         scatterings_train.append(np.log(np.abs(S)+epsilon))
 
@@ -82,7 +82,7 @@ def load_scattering_cifar(num_images=300, J=3, L=8, m=2, sigma_phi=0.6957, sigma
     t_scats = time.time()
     for i in np.arange(0, X_test.shape[0], step):
         print(i, '/', min(num_images*3, X_test.shape[0]))
-        S,u = scattering(X_test[i:i + step , :, :], wavelet_filters,m=m)
+        S,u,st = scattering(X_test[i:i + step , :, :], wavelet_filters,m=m)
 
         scatterings_test.append(np.log(np.abs(S)+epsilon))
 
